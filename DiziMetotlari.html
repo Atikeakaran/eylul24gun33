@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/star.png" type="image/png">
+    <title>Dizi Metotları</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Doto:wght@100..900&display=swap');
+
+        body {
+            background: rgb(247, 184, 184);
+            margin: 3rem;
+            font-family: "Doto", sans-serif;
+            color: blueviolet;
+
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .sutunlar {
+            display: flex;
+            gap: 1rem;
+
+        }
+
+        .sutunlar>div {
+            flex: 1;
+        }
+
+        textarea {
+            width: 100%;
+        }
+
+        .butonlar {
+            margin-top: 1rem;
+            text-align: center;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Bir Takım Dizi İşlemleri</h1>
+    <div class="sutunlar">
+        <div>
+            <textarea id="kaynak" rows="13"></textarea>
+        </div>
+        <div>
+            <textarea id="sonuc" rows="13"></textarea>
+        </div>
+    </div>
+    <div class="butonlar">
+        <button id="btnUzun">Uzunluklar</button>
+        <button id="btnTemiz">Temizle</button>
+        <button id="btnEkranTemiz">sil</button>
+        <button id="btnAlti">6 harfliler</button>
+        <input id="txtHarfSayi" type="text" placeholder="Harf sayısı" size="13">
+        <input id="txtAra" type="text" placeholder="ara.." size="10">
+        <button id="btnTers">Tersten</button>
+        <button id="btnKaristir">Karıştır</button>
+        <button id="btnSirala">Sırala (A-Z)</button>
+        <button id="btnTersSirala">Sırala (Z-A)</button>
+        <button id="btnBonus">Talihlileri Geri sayımlı Göster</button>
+    </div>
+
+
+
+    <script>
+
+        const txtKaynak = document.getElementById("kaynak");
+        txtKaynak.value = localStorage["BirTakimDiziData"] ?? "";
+        const txtSonuc = document.getElementById("sonuc");
+        const btnUzun = document.getElementById("btnUzun");
+        const btnTemiz = document.getElementById("btnTemiz");
+        const btnEkranTemiz = document.getElementById("btnEkranTemiz");
+        const btnAlti = document.getElementById("btnAlti");
+        const txtHarfSayi = document.getElementById("txtHarfSayi");
+        const txtAra = document.getElementById("txtAra");
+        const btnTers = document.getElementById("btnTers");
+        const btnKaristir = document.getElementById("btnKaristir");
+        const btnSirala = document.getElementById("btnSirala");
+        const btnTersSirala = document.getElementById("btnTersSirala");
+        const btnBonus = document.getElementById("btnBonus");
+
+
+        txtKaynak.oninput = function () {
+            localStorage["BirTakimDiziData"] = txtKaynak.value;
+        }
+        btnUzun.onclick = function () {
+            //btnUzun.textContent="saka";
+            const str = txtKaynak.value;
+            //console.log(str);
+            /* for ( let i = 0 ; i< str.length; i++){
+                console.log(str.charCodeAt(i));
+            } */
+            const kaynakDizi = str.split("\n");
+            const hedefDizi = kaynakDizi.map(x => x.trim().length);
+            const hedefStr = hedefDizi.join("\n");
+            txtSonuc.value = hedefStr;
+        };
+
+        btnTemiz.onclick = function () {
+            txtKaynak.value = txtSonuc.value = "";
+            localStorage.removeItem("BirTakimDiziData");
+        }
+
+        btnEkranTemiz.onclick = function () {
+            txtKaynak.value = txtSonuc.value = "";
+        }
+
+        txtHarfSayi.oninput = function () {
+            const dizi = txtKaynak.value.trim().split("\n");
+            const hedef = dizi.filter(x => x.length == txtHarfSayi.value);
+            txtSonuc.value = hedef.join("\n");
+        }
+
+        btnAlti.onclick = function () {
+            const dizi = txtKaynak.value.trim().split("\n");
+            const hedef = dizi.filter(x => x.length == 6);
+            txtSonuc.value = hedef.join("\n");
+        }
+
+        txtAra.oninput = function () {
+            //txtSonuc.value=Math.random();  //test edildi
+            const ara = txtAra.value.toLocaleLowerCase();
+            const dizi = txtKaynak.value.trim().split("\n");
+            const hedef = dizi.filter(x => x.toLocaleLowerCase().includes(ara));
+            txtSonuc.value = hedef.join("\n");
+        }
+
+        txtKaynak.onscroll = () => txtSonuc.scrollTop = txtKaynak.scrollTop;
+        txtSonuc.onscroll = () => txtKaynak.scrollTop = txtSonuc.scrollTop;
+        /*         
+                txtKaynak.addEventListener("scroll", function () {
+                    txtSonuc.scrollTop = txtKaynak.scrollTop;
+                });
+                txtSonuc.addEventListener("scroll", function () {
+                    txtKaynak.scrollTop = txtSonuc.scrollTop;
+                }); 
+        */
+
+        btnTers.onclick = function () {
+            txtSonuc.value = txtKaynak.value.split("\n").toReversed().join("\n");
+        }
+
+        btnKaristir.onclick =
+            () => txtSonuc.value = karistir(txtKaynak.value.split("\n")).join("\n");
+        /* 
+                btnKaristir.onclick = function () {
+                    const kaynakDizi = txtKaynak.value.split("\n");
+                    karistir(kaynakDizi);
+                    txtSonuc.value = kaynakDizi.join("\n");
+                }
+        
+         */
+
+        function karistir(dizi) {
+            for (let i = 0; i < dizi.length - 1; i++) {
+                let talihliIndeks = rastgele(i, dizi.length - 1);
+                let yedek = dizi[i];
+                dizi[i] = dizi[talihliIndeks];
+                dizi[talihliIndeks] = yedek;
+            }
+            return dizi;
+        }
+
+        /*min ve max sayi aralığına dahil */
+        function rastgele(min, max) {
+            const adet = max - min + 1;
+            return Math.floor(Math.random() * adet) + min;
+        }
+
+
+        function kaynakDizi() { return txtKaynak.value.split("\n"); }
+        function gosterDizi(dizi) { txtSonuc.value = dizi.join("\n"); }
+
+        btnSirala.onclick =
+            () => gosterDizi(kaynakDizi().sort());
+        btnTersSirala.onclick =
+            () => gosterDizi(kaynakDizi().sort().reverse());
+
+
+        btnBonus.onclick = function () {
+            let dizi = kaynakDizi();
+            //let dizi = txtKaynak.split("\n");
+            karistir(dizi);
+            txtSonuc.value = "";
+            diziOgeleriniTerstenTekerTekerEkle(dizi);
+
+            /* 
+            for (let i = dizi.length-1; i >= 0; i--) {
+                let oge = dizi[i];
+                txtSonuc.value += (i + 1) + "-" + oge + "\n";
+            } 
+            */
+        }
+
+        function diziOgeleriniTerstenTekerTekerEkle(dizi) {
+            bekleVeGoster(dizi, dizi.length - 1);
+        }
+        function bekleVeGoster(dizi, indeks) {
+            if (indeks == -1) return;
+
+            setTimeout(function () {
+                txtSonuc.value += (indeks + 1) + "-" + dizi[indeks] + "\n";
+                bekleVeGoster(dizi, indeks - 1)
+            }, indeks > 2 ? 500 : (3 - indeks) ** 2 * 250 + 500);
+            //}, 1000);
+        }
+
+    </script>
+</body>
+
+</html>
